@@ -1,0 +1,108 @@
+{
+  "venues": [
+    {
+      "id": "honda",
+      "name": "本多劇場",
+      "nameEn": "Honda Theatre",
+      "address": "東京都世田谷区北沢2-10-15",
+      "lat": 35.6601,
+      "lng": 139.6683,
+      "capacity": 386,
+      "description": "下北沢を代表する中規模劇場。商業演劇から実験的作品まで幅広く上演。",
+      "url": "https://www.honda-geki.com/",
+      "tel": "03-3468-0088",
+      "access": "下北沢駅南口徒歩3分"
+    },
+    {
+      "id": "suzunari",
+      "name": "ザ・スズナリ",
+      "nameEn": "Za Suzunari",
+      "address": "東京都世田谷区北沢1-45-15",
+      "lat": 35.6629,
+      "lng": 139.6699,
+      "capacity": 170,
+      "description": "小劇場ブームの中心地として1981年に開館した老舗小劇場。",
+      "url": "https://www.honda-geki.com/suzunari.html",
+      "tel": "03-3469-0511",
+      "access": "下北沢駅北口徒歩3分"
+    },
+    {
+      "id": "b1",
+      "name": "小劇場B1",
+      "nameEn": "Shogekijo B1",
+      "address": "東京都世田谷区北沢2-11-8",
+      "lat": 35.6607,
+      "lng": 139.6677,
+      "capacity": 85,
+      "description": "地下に位置する実験的な作品を多数上演する小空間。",
+      "url": "https://www.shimokita-b1.com/",
+      "tel": "03-3414-7910",
+      "access": "下北沢駅南口徒歩2分"
+    },
+    {
+      "id": "711",
+      "name": "シアター711",
+      "nameEn": "Theatre 711",
+      "address": "東京都世田谷区北沢2-11-8 B1",
+      "lat": 35.6608,
+      "lng": 139.6676,
+      "capacity": 84,
+      "description": "若手演劇人の登竜門として知られる小劇場。",
+      "url": "https://theatre711.com/",
+      "tel": "03-3414-0711",
+      "access": "下北沢駅南口徒歩2分"
+    },
+    {
+      "id": "offoff",
+      "name": "OFF OFFシアター",
+      "nameEn": "OFF OFF Theatre",
+      "address": "東京都世田谷区北沢2-11-8",
+      "lat": 35.6606,
+      "lng": 139.6678,
+      "capacity": 74,
+      "description": "オルタナティブな演劇作品を上演する自由度の高い空間。",
+      "url": "https://offofftheatre.com/",
+      "tel": "03-3414-7891",
+      "access": "下北沢駅南口徒歩2分"
+    },
+    {
+      "id": "rakuen",
+      "name": "小劇場楽園",
+      "nameEn": "Shogekijo Rakuen",
+      "address": "東京都世田谷区北沢2-5-3 AGビル5F",
+      "lat": 35.6619,
+      "lng": 139.6672,
+      "capacity": 100,
+      "description": "5階に位置する開放的な小劇場。コメディからシリアスドラマまで。",
+      "url": "https://rakuen-shimokita.com/",
+      "tel": "03-3418-5880",
+      "access": "下北沢駅北口徒歩1分"
+    },
+    {
+      "id": "momo",
+      "name": "劇場MOMO",
+      "nameEn": "Gekijo MOMO",
+      "address": "東京都世田谷区北沢2-15-7",
+      "lat": 35.6595,
+      "lng": 139.6688,
+      "capacity": 80,
+      "description": "アートと演劇の境界を探る実験的公演が集まる劇場。",
+      "url": "https://gekijomomo.com/",
+      "tel": "03-5486-8600",
+      "access": "下北沢駅南口徒歩4分"
+    },
+    {
+      "id": "ekimae",
+      "name": "下北沢駅前劇場",
+      "nameEn": "Shimokitazawa Ekimae Gekijo",
+      "address": "東京都世田谷区北沢2-4-1",
+      "lat": 35.6617,
+      "lng": 139.6680,
+      "capacity": 120,
+      "description": "駅前の好立地に構える中小規模劇場。多彩な演目を上演。",
+      "url": "https://ekimae-gekijo.com/",
+      "tel": "03-3422-8480",
+      "access": "下北沢駅南口徒歩1分"
+    }
+  ]
+}

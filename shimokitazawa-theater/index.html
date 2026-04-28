@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="下北沢で上演される演劇・舞台公演を一覧で検索。日程・会場・ジャンルで絞り込み、チケット購入ページへ直接アクセス。">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="base-path" content=".">
+  <title>下北沢 演劇ガイド — Shimokitazawa Theater Guide</title>
+
+  <!-- OGP -->
+  <meta property="og:title" content="下北沢 演劇ガイド">
+  <meta property="og:description" content="下北沢で上演される演劇・舞台公演を一覧で検索できるガイドサイト。">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* ─── Hero ─────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      padding: calc(72px + 48px) 24px 48px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(192,57,43,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(240,165,0,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--color-text);
+      margin-bottom: 8px;
+    }
+    .hero-title span {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      color: var(--color-text-muted);
+      margin-bottom: 32px;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .hero-stat-num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── Section header ───────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 24px 0;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+    .result-count {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+    .result-count strong {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    /* ─── Card thumbnail ───────────────────────────────── */
+    .card-thumbnail-wrap { overflow: hidden; }
+    .card-thumbnail {
+      aspect-ratio: 16/8;
+      display: flex;
+      align-items: flex-end;
+      padding: 16px;
+      transition: transform 400ms ease;
+    }
+    .performance-card:hover .card-thumbnail { transform: scale(1.03); }
+    .card-thumbnail-inner {
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      border-radius: 8px;
+      padding: 8px 12px;
+      width: 100%;
+    }
+    .card-thumb-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-thumb-company {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 2px;
+    }
+
+    /* ─── Card footer ──────────────────────────────────── */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 12px;
+    }
+    .card-price {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+    .card-cast {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ─── Modal hero ───────────────────────────────────── */
+    .modal-hero {
+      display: flex;
+      align-items: flex-end;
+      padding: 32px 24px 24px;
+      min-height: 180px;
+    }
+    .modal-hero-inner {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 16px 20px;
+      width: 100%;
+    }
+    .modal-hero-title {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      font-weight: 700;
+      color: #fff;
+    }
+    .modal-hero-company { font-size: 0.9rem; color: rgba(255,255,255,0.75); margin-top: 4px; }
+    .modal-section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 8px;
+    }
+    .modal-organizer { font-size: 0.85rem; color: var(--color-text-muted); }
+    .modal-tag {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: rgba(255,255,255,0.08);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+    }
+    .modal-cast-section { display: flex; flex-direction: column; gap: 4px; }
+    .modal-cast { font-size: 0.9rem; color: var(--color-text); }
+
+    /* ─── Empty state ──────────────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px;
+      gap: 12px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 3rem; line-height: 1; }
+    .empty-title { font-size: 1.1rem; font-weight: 700; color: var(--color-text); }
+    .empty-sub { font-size: 0.85rem; color: var(--color-text-muted); }
+    .btn-reset-filter {
+      margin-top: 8px;
+      padding: 10px 24px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      border: 1px solid var(--color-accent);
+      background: rgba(240,165,0,0.08);
+      cursor: pointer;
+      transition: background var(--transition-base), box-shadow var(--transition-base);
+    }
+    .btn-reset-filter:hover {
+      background: rgba(240,165,0,0.16);
+      box-shadow: 0 0 12px rgba(240,165,0,0.2);
+    }
+
+    /* ─── Map popup ─────────────────────────────────────── */
+    .leaflet-popup-content-wrapper.theater-popup,
+    .theater-popup .leaflet-popup-content-wrapper {
+      background: var(--bg-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      color: var(--color-text);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .theater-popup .leaflet-popup-tip { background: var(--bg-elevated); }
+    .map-popup { font-family: var(--font-base); min-width: 200px; }
+    .popup-name { display: block; font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .popup-address { font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 8px; }
+    .popup-count { font-size: 0.75rem; color: var(--color-accent); font-weight: 700; margin-bottom: 8px; }
+    .popup-perf-item {
+      padding: 6px 0;
+      border-top: 1px solid var(--color-border);
+      cursor: pointer;
+    }
+    .popup-perf-item:hover .popup-title { color: var(--color-accent); }
+    .popup-genre { font-size: 0.65rem; background: rgba(192,57,43,0.2); color: #e06050; border-radius: 3px; padding: 1px 5px; margin-right: 6px; }
+    .popup-title { font-size: 0.8rem; }
+    .popup-more { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 4px; }
+
+    /* ─── Map marker ─────────────────────────────────────── */
+    .theater-marker { background: transparent; border: none; }
+    .marker-pin {
+      width: 44px;
+      height: 44px;
+      background: var(--color-primary);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(192,57,43,0.5);
+      border: 2px solid rgba(255,255,255,0.2);
+      transition: transform 200ms ease;
+    }
+    .theater-marker:hover .marker-pin { transform: rotate(-45deg) scale(1.15); }
+    .marker-count {
+      transform: rotate(45deg);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: var(--font-base);
+    }
+
+    /* ─── Sidebar performances ──────────────────────────── */
+    .sidebar-perfs { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .sidebar-perf-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background var(--transition-base);
+    }
+    .sidebar-perf-item:hover { background: rgba(240,165,0,0.08); }
+    .sidebar-genre {
+      flex-shrink: 0;
+      font-size: 0.62rem;
+      background: rgba(192,57,43,0.18);
+      color: #e06050;
+      border-radius: 3px;
+      padding: 1px 5px;
+    }
+    .sidebar-title { font-size: 0.78rem; color: var(--color-text); }
+
+    /* ─── Footer ────────────────────────────────────────── */
+    footer {
+      padding: 48px 24px 32px;
+      text-align: center;
+      border-top: 1px solid var(--color-border);
+      margin-top: 48px;
+    }
+    .footer-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      margin-bottom: 12px;
+    }
+    .footer-note {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      line-height: 1.8;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* ─── Responsive adjustments ────────────────────────── */
+    @media (max-width: 768px) {
+      .hero { padding: calc(72px + 32px) 16px 32px; }
+      .hero-stats { gap: 20px; }
+      .hero-stat-num { font-size: 1.4rem; }
+      .section-header { padding: 16px 16px 0; }
+      .card-footer { flex-direction: column; align-items: flex-start; }
+      .modal-hero { min-height: 140px; padding: 24px 16px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Header ──────────────────────────────────────────── -->
+  <header class="site-header" role="banner">
+    <a href="/" class="site-title" aria-label="下北沢 演劇ガイド トップへ">
+      🎭 下北沢 演劇ガイド
+    </a>
+    <nav class="main-nav" aria-label="表示切替">
+      <button class="nav-btn active" data-view="grid" aria-pressed="true">
+        <span class="nav-icon">⊞</span>
+        <span>一覧</span>
+      </button>
+      <button class="nav-btn" data-view="map" aria-pressed="false">
+        <span class="nav-icon">◉</span>
+        <span>地図</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ─── Hero ─────────────────────────────────────────────── -->
+  <section class="hero" aria-label="サイト紹介">
+    <p class="hero-eyebrow">Tokyo's Theater District</p>
+    <h1 class="hero-title">下北沢の<span>演劇</span>を、<br>もっと身近に。</h1>
+    <p class="hero-subtitle">小劇場の街・下北沢で上演中の公演を一覧で確認。<br>日程・会場で絞り込み、チケット購入まで一気に。</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-performances">12</span>
+        <span class="hero-stat-label">上演公演数</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-venues">8</span>
+        <span class="hero-stat-label">劇場数</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">2026</span>
+        <span class="hero-stat-label">Apr – Jun</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Filter panel ─────────────────────────────────────── -->
+  <div class="filter-panel" role="search" aria-label="公演を絞り込む">
+    <span class="filter-label">日付</span>
+    <div id="date-chips" class="date-chips-wrap" aria-label="日付選択"></div>
+
+    <div class="filter-divider" role="separator"></div>
+
+    <span class="filter-label">詳細</span>
+    <select id="filter-genre" class="filter-select" aria-label="ジャンルで絞り込む">
+      <option value="">ジャンル</option>
+    </select>
+    <select id="filter-venue" class="filter-select" aria-label="会場で絞り込む">
+      <option value="">会場</option>
+    </select>
+
+    <div class="filter-divider" role="separator"></div>
+
+    <input type="date" id="filter-date" class="filter-date-input" aria-label="日付を指定">
+    <button id="filter-reset" class="filter-chip" aria-label="フィルターをリセット">✕ リセット</button>
+  </div>
+
+  <!-- ─── Main ──────────────────────────────────────────────── -->
+  <main id="main" role="main">
+
+    <!-- Grid view -->
+    <div id="view-grid">
+      <div class="section-header">
+        <span class="section-title">公演一覧</span>
+        <span class="result-count" id="result-count" aria-live="polite"></span>
+      </div>
+      <div class="performance-grid" id="performance-grid" role="list" aria-label="公演一覧"></div>
+    </div>
+
+    <!-- Map view -->
+    <div id="view-map" class="hidden">
+      <div id="map-container">
+        <div id="map-canvas" aria-label="下北沢劇場マップ"></div>
+        <aside class="map-sidebar" aria-label="劇場一覧"></aside>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ─── Modal ────────────────────────────────────────────── -->
+  <div id="modal-overlay" role="dialog" aria-modal="true" aria-label="公演詳細" style="display:none;">
+    <div class="performance-modal" id="performance-modal"></div>
+  </div>
+
+  <!-- ─── Footer ───────────────────────────────────────────── -->
+  <footer role="contentinfo">
+    <p class="footer-logo">🎭 下北沢 演劇ガイド</p>
+    <p class="footer-note">
+      掲載情報は変更になる場合があります。最新情報は各劇団・劇場の公式サイトをご確認ください。<br>
+      チケット購入は各公演の公式チケットサイトにてお願いいたします。
+    </p>
+  </footer>
+
+  <!-- ─── Scripts ───────────────────────────────────────────── -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPdA="
+          crossorigin=""></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    /* result-count を applyFilters 後に更新 */
+    document.addEventListener('filter:applied', function () {
+      var state = window.theaterApp && window.theaterApp.getState();
+      if (!state) return;
+      var el = document.getElementById('result-count');
+      if (el) {
+        el.innerHTML = '<strong>' + state.filteredPerformances.length + '</strong> / ' + state.performances.length + ' 公演';
+      }
+    });
+
+    /* filter-select のスタイル */
+    document.querySelectorAll('.filter-select').forEach(function (sel) {
+      sel.style.cssText = 'background:rgba(36,36,41,0.8);color:var(--color-text);border:1px solid var(--color-border);border-radius:999px;padding:6px 12px;font-size:0.8rem;font-family:var(--font-base);cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;';
+    });
+    document.querySelector('#filter-date') && (function (el) {
+      el.style.cssText = 'background:rgba(36,36,41,0.8);color:var(--color-text);border:1px solid var(--color-border);border-radius:999px;padding:6px 12px;font-size:0.8rem;font-family:var(--font-base);cursor:pointer;outline:none;color-scheme:dark;';
+    })(document.querySelector('#filter-date'));
+  </script>
+</body>
+</html>
