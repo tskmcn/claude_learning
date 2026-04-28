@@ -133,21 +133,22 @@
     var venue = State.venues.find(function (v) { return v.id === p.venueId; }) || {};
     var dateRange = formatDateRange(p.dates);
     var priceStr = formatPrice(p.price);
-    var castStr = p.cast.slice(0, 3).join('、') + (p.cast.length > 3 ? ' ほか' : '');
+    var castStr = p.cast.slice(0, 3).map(stripSampleMarker).join('、') + (p.cast.length > 3 ? ' ほか' : '');
+    var sampleBadge = isSample(p.title) ? '<span class="badge-sample" title="サンプルデータ">SAMPLE</span>' : '';
 
-    return '<article class="performance-card" data-id="' + p.id + '" tabindex="0" role="button" aria-label="' + escHtml(p.title) + ' の詳細を見る">' +
+    return '<article class="performance-card" data-id="' + p.id + '" tabindex="0" role="button" aria-label="' + escHtml(stripSampleMarker(p.title)) + ' の詳細を見る">' +
       '<div class="card-thumbnail-wrap">' +
         '<div class="card-thumbnail" style="background:' + p.imageColor + ';">' +
           '<div class="card-thumbnail-inner">' +
-            '<div class="card-thumb-title">' + escHtml(p.title) + '</div>' +
-            '<div class="card-thumb-company">' + escHtml(p.company) + '</div>' +
+            '<div class="card-thumb-title">' + displayText(p.title) + '</div>' +
+            '<div class="card-thumb-company">' + displayText(p.company) + '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
       '<div class="card-body">' +
-        '<span class="card-genre">' + escHtml(p.genre) + '</span>' +
-        '<h2 class="card-title">' + escHtml(p.title) + '</h2>' +
-        '<p class="card-company">' + escHtml(p.company) + '</p>' +
+        '<div class="card-badges"><span class="card-genre">' + displayText(p.genre) + '</span>' + sampleBadge + '</div>' +
+        '<h2 class="card-title">' + displayText(p.title) + '</h2>' +
+        '<p class="card-company">' + displayText(p.company) + '</p>' +
         '<p class="card-dates">' + escHtml(dateRange) + '</p>' +
         '<p class="card-venue">' + escHtml(venue.name || '') + '</p>' +
         '<p class="card-cast">' + escHtml(castStr) + '</p>' +
@@ -225,28 +226,33 @@
     var matineeInfo = p.matineeDates && p.matineeDates.length > 0
       ? '一部日程にマチネあり (' + p.matineeStartTime + '開演)' : '';
 
+    var sampleNotice = isSample(p.title)
+      ? '<div class="modal-sample-notice">⚠️ このデータはサンプルです。実際の公演情報とは異なります。</div>'
+      : '';
+
     return '<button class="modal-close" aria-label="閉じる">&times;</button>' +
+      sampleNotice +
       '<div class="modal-hero" style="background:' + p.imageColor + ';">' +
         '<div class="modal-hero-inner">' +
-          '<h1 class="modal-hero-title">' + escHtml(p.title) + '</h1>' +
-          '<p class="modal-hero-company">' + escHtml(p.company) + '</p>' +
+          '<h1 class="modal-hero-title">' + displayText(p.title) + '</h1>' +
+          '<p class="modal-hero-company">' + displayText(p.company) + '</p>' +
         '</div>' +
       '</div>' +
       '<div class="modal-body">' +
         '<div class="modal-meta">' +
-          '<span class="modal-genre">' + escHtml(p.genre) + '</span>' +
-          p.tags.map(function (t) { return '<span class="modal-tag">' + escHtml(t) + '</span>'; }).join('') +
+          '<span class="modal-genre">' + displayText(p.genre) + '</span>' +
+          p.tags.map(function (t) { return '<span class="modal-tag">' + displayText(t) + '</span>'; }).join('') +
         '</div>' +
-        '<h2 class="modal-title">' + escHtml(p.title) + '</h2>' +
-        '<p class="modal-company">' + escHtml(p.company) + '　<span class="modal-organizer">主宰：' + escHtml(p.organizer) + '</span></p>' +
+        '<h2 class="modal-title">' + displayText(p.title) + '</h2>' +
+        '<p class="modal-company">' + displayText(p.company) + '　<span class="modal-organizer">主宰：' + displayText(p.organizer) + '</span></p>' +
         '<div class="modal-info-grid">' +
           '<div class="modal-info-item"><span class="modal-info-label">公演日程</span><span class="modal-info-value">' + escHtml(dateRange) + '</span></div>' +
           '<div class="modal-info-item"><span class="modal-info-label">会場</span><span class="modal-info-value">' + escHtml(venue.name || '') + '</span></div>' +
           '<div class="modal-info-item"><span class="modal-info-label">開場 / 開演</span><span class="modal-info-value">' + escHtml(p.openingTime) + ' / ' + escHtml(p.startTime) + (matineeInfo ? '<br><small>' + escHtml(matineeInfo) + '</small>' : '') + '</span></div>' +
           '<div class="modal-info-item"><span class="modal-info-label">会場住所</span><span class="modal-info-value">' + escHtml(venue.address || '') + '<br><small>' + escHtml(venue.access || '') + '</small></span></div>' +
         '</div>' +
-        '<div class="modal-cast-section"><span class="modal-info-label">出演者</span><p class="modal-cast">' + p.cast.map(escHtml).join('　') + '</p></div>' +
-        '<div class="modal-description"><h3 class="modal-section-label">あらすじ</h3><p>' + escHtml(p.synopsis) + '</p></div>' +
+        '<div class="modal-cast-section"><span class="modal-info-label">出演者</span><p class="modal-cast">' + p.cast.map(function(c){ return escHtml(stripSampleMarker(c)); }).join('　') + '</p></div>' +
+        '<div class="modal-description"><h3 class="modal-section-label">あらすじ</h3><p>' + displayText(p.synopsis) + '</p></div>' +
         '<div class="modal-actions">' +
           '<a href="' + escHtml(p.ticketUrl) + '" target="_blank" rel="noopener noreferrer" class="modal-ticket-btn">🎟 チケット購入</a>' +
           (venue.url ? '<a href="' + escHtml(venue.url) + '" target="_blank" rel="noopener noreferrer" class="modal-map-btn">🗺 劇場サイト</a>' : '') +
@@ -426,6 +432,18 @@
     var max = Math.max.apply(null, Object.values(price));
     if (min === max) return '¥' + min.toLocaleString();
     return '¥' + min.toLocaleString() + '〜';
+  }
+
+  function stripSampleMarker(str) {
+    return String(str).replace(/^##Sample##/, '');
+  }
+
+  function isSample(str) {
+    return String(str).startsWith('##Sample##');
+  }
+
+  function displayText(str) {
+    return escHtml(stripSampleMarker(str));
   }
 
   function escHtml(str) {
